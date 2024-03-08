@@ -10,18 +10,19 @@ import WebKit
 
 struct ContentView: View {
     private let url = "https://mortgage-calculator-coral.vercel.app/"
-    @State private var showLoading: Bool = false
+    @ObservedObject private var viewModel = ViewModel()
     
     var body: some View {
+        let webView = WebView(
+            url: URL(
+                string: url
+            )!,
+            viewModel: viewModel
+        )
         
         VStack {
-            WebView(
-                url: URL(
-                    string: url
-                )!,
-                showLoading: $showLoading
-            ).overlay(
-                showLoading ? ProgressView(
+            webView.overlay(
+                viewModel.isLoading ? ProgressView(
                     "Loading..."
                 ) : nil
             )
@@ -31,7 +32,7 @@ struct ContentView: View {
 
 struct WebView: UIViewRepresentable {
     let url: URL
-    @Binding var showLoading: Bool
+    @ObservedObject var viewModel: ViewModel
     
     func makeUIView(
         context: Context
@@ -52,31 +53,35 @@ struct WebView: UIViewRepresentable {
         _ uiView: UIViewType,
         context: Context
     ) {
-       
+        
     }
     
     func makeCoordinator() -> WebviewCoordinator {
-        WebviewCoordinator(
-            didStart: {
-                showLoading = true
-        },
-           didFinish: {
-               showLoading = false
-        })
+        WebviewCoordinator {
+            viewModel.isLoading = true
+        } didFinish: {
+            viewModel.isLoading = false
+        }
+
     }
 }
 
+class ViewModel : ObservableObject {
+    @Published var isLoading: Bool = true;
+}
+
+
 class WebviewCoordinator: NSObject, WKNavigationDelegate {
-    var didStart: () -> Void
-    var didFinish: () -> Void
+        var didStart: () -> Void
+        var didFinish: () -> Void
     
-    init(
-        didStart: @escaping () -> Void,
-        didFinish: @escaping () -> Void
-    ) {
-        self.didStart = didStart
-        self.didFinish = didFinish
-    }
+        init(
+            didStart: @escaping () -> Void,
+            didFinish: @escaping () -> Void
+        ) {
+            self.didStart = didStart
+            self.didFinish = didFinish
+        }
     
     func webView(
         _ webView: WKWebView,
