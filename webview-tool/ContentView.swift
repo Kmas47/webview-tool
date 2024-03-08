@@ -37,7 +37,8 @@ struct WebView: UIViewRepresentable {
         context: Context
     ) -> WKWebView {
         let webView = WKWebView()
-        
+        webView.navigationDelegate = context.coordinator
+        webView.scrollView.showsVerticalScrollIndicator = false
         let request = URLRequest(
             url: url
         )
@@ -51,7 +52,7 @@ struct WebView: UIViewRepresentable {
         _ uiView: UIViewType,
         context: Context
     ) {
-        
+       
     }
     
     func makeCoordinator() -> WebviewCoordinator {
